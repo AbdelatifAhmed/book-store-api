@@ -13,11 +13,10 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const userExists = await User.findOne({ email });
   if (userExists) {
-    res.status(400).json({
+   return res.status(400).json({
        status: 400,
        message: "User already exists"
        });
-    // throw new Error("User already exists");
   }
 
   const user = await User.create({
@@ -27,15 +26,17 @@ const registerUser = asyncHandler(async (req, res) => {
   });
 
   if (user) {
-    res.status(201).json({
+   return res.status(201).json({
       _id: user._id,
       name: user.name,
       email: user.email,
       token: generateToken(user._id),
     });
   } else {
-    res.status(400);
-    throw new Error("Invalid user data");
+    return res.status(400).json({
+      status: 400,
+      message: "Invalid user data"
+    });
   }
 });
 
@@ -43,7 +44,6 @@ const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
-
   if (user && (await user.matchPassword(password))) {
     res.json({
       _id: user._id,
