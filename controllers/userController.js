@@ -13,8 +13,11 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const userExists = await User.findOne({ email });
   if (userExists) {
-    res.status(400);
-    throw new Error("User already exists");
+    res.status(400).json({
+       status: 400,
+       message: "User already exists"
+       });
+    // throw new Error("User already exists");
   }
 
   const user = await User.create({
@@ -28,7 +31,6 @@ const registerUser = asyncHandler(async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      isAdmin: user.isAdmin,
       token: generateToken(user._id),
     });
   } else {
@@ -37,7 +39,7 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-const authUser = asyncHandler(async (req, res) => {
+const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
@@ -47,7 +49,7 @@ const authUser = asyncHandler(async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      isAdmin: user.isAdmin,
+      role: user.role,
       token: generateToken(user._id),
     });
   } else {
@@ -64,7 +66,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      isAdmin: user.isAdmin,
+      isAdmin: user.role,
     });
   } else {
     res.status(404);
@@ -74,6 +76,6 @@ const getUserProfile = asyncHandler(async (req, res) => {
 
 module.exports = {
   registerUser,
-  authUser,
+  loginUser,
   getUserProfile,
 };

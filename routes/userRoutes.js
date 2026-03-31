@@ -2,8 +2,7 @@ const express = require("express");
 const router = express.Router();
 const {
   registerUser,
-  authUser,
-  getUserProfile,
+  loginUser,
 } = require("../controllers/userController");
 
 // rania put the middleware here like that 
@@ -11,7 +10,7 @@ const {
 
 // Public routes
 router.post("/register", registerUser);
-router.post("/login", authUser);
+router.post("/login", loginUser);
 
 // Private route handled by rania 
 // router.get("/profile", getUserProfile);

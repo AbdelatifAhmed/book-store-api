@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 
-function validateToken(req, res, next) {
+function protect(req, res, next) {
   const token = req.headers.token;
 
   if (!token) {
@@ -21,10 +21,9 @@ function validateToken(req, res, next) {
   });
 }
 
-module.exports = validateToken;
 
 
-function isAdmin(req, res, next) {
+function admin(req, res, next) {
   if (req.user && req.user.role === "admin") {
     next();
   } else {
@@ -34,4 +33,4 @@ function isAdmin(req, res, next) {
   }
 }
 
-module.exports = { validateToken, isAdmin };
+module.exports = { protect, admin };
