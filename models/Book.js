@@ -28,6 +28,11 @@ const bookSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    image: {
+      type: String,
+      default: "https://img.freepik.com/free-vector/vector-blank-book-cover-isolated-white_1284-41904.jpg?semt=ais_incoming&w=740&q=80"
+    },
+    description: { type: String }
   },
   {
     timestamps: true,

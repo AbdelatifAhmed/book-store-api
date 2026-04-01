@@ -4,32 +4,33 @@ const Book = require("../models/Book");
 
 const createOrder = async (req, res) => {
     try {
-        
+        const existingOrder = await Order.findOne({
+            user: req.user._id,
+            book: req.body.bookId,
+            isReturned: false 
+        });
+
+        if (existingOrder) {
+            return res.status(400).json({ message: "You already have an active request for this book" });
+        }
+
         const book = await Book.findById(req.body.bookId);
-
-        if (!book) {
-            return res.status(404).json({ message: "Book not found" });
+        if (!book || book.availableCopies <= 0) {
+            return res.status(400).json({ message: "Book not available" });
         }
 
-        if (book.availableCopies <= 0) {
-            return res.status(400).json({ message: "No copies available" });
-        }
-
-        
-        book.availableCopies = book.availableCopies - 1;
+        book.availableCopies -= 1;
         await book.save();
 
-        
         const order = new Order({
-            user: req.user.id, 
+            user: req.user._id,
             book: req.body.bookId
-        }); 
+        });
 
-        const savedOrder = await order.save();
-        res.status(201).json(savedOrder);
-
+        await order.save();
+        res.status(201).json({ message: "Order placed successfully" });
     } catch (err) {
-        res.status(400).json({ message: err.message });
+        res.status(500).json({ message: err.message });
     }
 };
 
@@ -42,15 +43,19 @@ const returnBook = async (req, res) => {
             return res.status(404).json({ message: "Order not found" });
         }
 
+        if (order.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+            return res.status(401).json({ message: "Not authorized" });
+        }
+
         if (order.isReturned) {
             return res.status(400).json({ message: "Book already returned" });
         }
 
-       
+
         order.isReturned = true;
         await order.save();
 
-        
+
         const book = await Book.findById(order.book);
         book.availableCopies = book.availableCopies + 1;
         await book.save();
@@ -65,7 +70,7 @@ const returnBook = async (req, res) => {
 
 const getMyOrders = async (req, res) => {
     try {
-       
+
         const orders = await Order.find({ user: req.user.id }).populate("book");
         res.json(orders);
     } catch (err) {
@@ -75,12 +80,35 @@ const getMyOrders = async (req, res) => {
 
 
 const getAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .populate("user", "name email") 
+      .populate("book", "title price image"); 
+    res.json(orders);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+const updateOrderStatus = async (req, res) => {
     try {
-        const orders = await Order.find().populate("user").populate("book");
-        res.json(orders);
+        const { status } = req.body;
+        const order = await Order.findById(req.params.id);
+
+        if (!order) return res.status(404).json({ message: "Order not found" });
+
+        if (status === "Rejected" && order.status !== "Rejected") {
+            const book = await Book.findById(order.book);
+            book.availableCopies += 1; 
+            await book.save();
+        }
+
+        order.status = status;
+        await order.save();
+        res.json({ message: `Order ${status}`, order });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ message: err.message });
     }
 };
 
-module.exports = { createOrder, returnBook, getMyOrders, getAllOrders };
+module.exports = { createOrder, returnBook, getMyOrders, getAllOrders , updateOrderStatus };
