@@ -4,6 +4,7 @@ require("dotenv").config();
 const connectDB = require("./config/db");
 const bookRoutes = require("./routes/bookRoutes");
 const orderRoutes = require("./routes/orderRoutes");
+const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 const cors = require("cors");
 const PORT = process.env.PORT || 5000;
 
@@ -16,6 +17,8 @@ app.get("/", (req, res) => res.send("Book Store API running"));
 app.use("/api/users", userRoutes);
 app.use("/api/books", bookRoutes);
 app.use("/api/orders", orderRoutes);
+app.use(notFound);
+app.use(errorHandler);
 
 connectDB();
 
