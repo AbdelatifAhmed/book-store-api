@@ -39,6 +39,7 @@ exports.updateBook = async (req, res) => {
   try {
     const book = await Book.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
+      runValidators: true,
     });
 
     if (!book) return res.status(404).json({ status: 404, message: "Book not found" });

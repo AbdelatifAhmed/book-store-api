@@ -1,7 +1,6 @@
 const Order = require("../models/Order");
 const Book = require("../models/Book");
 
-
 const createOrder = async (req, res) => {
     try {
         const existingOrder = await Order.findOne({
@@ -30,51 +29,41 @@ const createOrder = async (req, res) => {
         await order.save();
         res.status(201).json({ message: "Order placed successfully" });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        res.status(400).json({ message: err.message });
     }
 };
-
 
 const returnBook = async (req, res) => {
     try {
         const order = await Order.findById(req.params.id);
-
-        if (!order) {
-            return res.status(404).json({ message: "Order not found" });
-        }
-
-        
-
-        if (order.isReturned) {
-            return res.status(400).json({ message: "Book already returned" });
-        }
-
+        if (!order) return res.status(404).json({ message: "Order not found" });
+        if (order.isReturned) return res.status(400).json({ message: "Book already returned" });
 
         order.isReturned = true;
         await order.save();
 
-
         const book = await Book.findById(order.book);
-        book.availableCopies = book.availableCopies + 1;
-        await book.save();
+        if (book) {
+            book.availableCopies += 1;
+            await book.save();
+        }
 
         res.json({ message: "Book returned successfully", order });
-
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
 
-
 const getMyOrders = async (req, res) => {
     try {
-        const orders = await Order.find({ user: req.user.id }).populate("book").sort({ createdAt: -1 });
+        const orders = await Order.find({ user: req.user.id })
+            .populate("book")
+            .sort({ createdAt: -1 });
         res.json(orders);
     } catch (err) {
-        res.status(500).json({ status: 500, message: err.message });
+        res.status(500).json({ message: err.message });
     }
 };
-
 
 const getAllOrders = async (req, res) => {
   try {
@@ -84,7 +73,7 @@ const getAllOrders = async (req, res) => {
       .sort({ createdAt: -1 });
     res.json(orders);
   } catch (err) {
-    res.status(500).json({ status: 500, message: err.message });
+    res.status(500).json({ message: err.message });
   }
 };
 
@@ -97,16 +86,18 @@ const updateOrderStatus = async (req, res) => {
 
         if (status === "Rejected" && order.status !== "Rejected") {
             const book = await Book.findById(order.book);
-            book.availableCopies += 1; 
-            await book.save();
+            if (book) {
+                book.availableCopies += 1; 
+                await book.save();
+            }
         }
 
         order.status = status;
         await order.save();
-        res.json({ status: 200, message: `Order ${status}`, order });
+        res.json({ status: 200, message: `Order updated to ${status}`, order });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        res.status(400).json({ message: err.message });
     }
 };
 
-module.exports = { createOrder, returnBook, getMyOrders, getAllOrders , updateOrderStatus };
+module.exports = { createOrder, returnBook, getMyOrders, getAllOrders, updateOrderStatus };
