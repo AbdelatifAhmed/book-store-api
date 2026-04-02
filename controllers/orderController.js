@@ -43,9 +43,7 @@ const returnBook = async (req, res) => {
             return res.status(404).json({ message: "Order not found" });
         }
 
-        if (order.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
-            return res.status(401).json({ message: "Not authorized" });
-        }
+        
 
         if (order.isReturned) {
             return res.status(400).json({ message: "Book already returned" });
@@ -70,11 +68,10 @@ const returnBook = async (req, res) => {
 
 const getMyOrders = async (req, res) => {
     try {
-
-        const orders = await Order.find({ user: req.user.id }).populate("book");
+        const orders = await Order.find({ user: req.user.id }).populate("book").sort({ createdAt: -1 });
         res.json(orders);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ status: 500, message: err.message });
     }
 };
 
@@ -83,10 +80,11 @@ const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find()
       .populate("user", "name email") 
-      .populate("book", "title price image"); 
+      .populate("book", "title price image")
+      .sort({ createdAt: -1 });
     res.json(orders);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ status: 500, message: err.message });
   }
 };
 
@@ -105,7 +103,7 @@ const updateOrderStatus = async (req, res) => {
 
         order.status = status;
         await order.save();
-        res.json({ message: `Order ${status}`, order });
+        res.json({ status: 200, message: `Order ${status}`, order });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

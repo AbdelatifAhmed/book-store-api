@@ -7,6 +7,7 @@ async function protect(req, res, next) {
   
   if (!token) {
     return res.status(401).json({
+      status: 401,
       message: "Token required",
     });
   }
@@ -14,6 +15,7 @@ async function protect(req, res, next) {
   jwt.verify(token, process.env.JWT_SECRET, async (err, payload) => {
     if (err) {
       return res.status(403).json({
+        status: 403,
         message: "Invalid token",
       });
     }
@@ -21,12 +23,12 @@ async function protect(req, res, next) {
     try {
       const user = await User.findById(payload.id).select("-password");
       if (!user) {
-        return res.status(404).json({ message: "User not found" });
+        return res.status(404).json({ status: 404, message: "User not found" });
       }
       req.user = user;
       next();
     } catch (error) {
-      return res.status(500).json({ message: "Server error" });
+      return res.status(500).json({ status: 500, message: "Server error" });
     }
   });
 }
@@ -34,12 +36,11 @@ async function protect(req, res, next) {
 
 
 function admin(req, res, next) {
-  console.log(req.user);
-
   if (req.user && req.user.role === "admin") {
     next();
   } else {
     return res.status(403).json({
+      status: 403,
       message: "Admin only",
     });
   }

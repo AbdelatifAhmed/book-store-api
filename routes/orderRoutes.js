@@ -11,7 +11,7 @@ const { protect, admin } = require("../middleware/authMiddleware");
 router.get("/all", protect, admin, getAllOrders);
 router.get("/myorders", protect, getMyOrders);
 router.put('/:id/status', protect, admin, updateOrderStatus);
-router.put("/:id/return", protect, returnBook);
+router.put("/:id/return", protect,admin, returnBook);
 router.post("/", protect, createOrder);
 
 
