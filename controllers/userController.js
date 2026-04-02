@@ -110,12 +110,37 @@ const updateUserProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
 
   if (user) {
+    const { name, email, password } = req.body;
 
-    user.name = req.body.name || user.name;
-    user.email = req.body.email || user.email;
+    if (email && email !== user.email) {
+      const emailExists = await User.find({ email });
+      if (emailExists) {
+        return res.status(400).json({
+          status: 400,
+          message: "Email is already taken by another user",
+        });
+      }
+      user.email = email;
+    }
 
-    if (req.body.password) {
-      user.password = req.body.password;
+    if (name) {
+      if (name.length < 3) {
+        return res.status(400).json({
+          status: 400,
+          message: "Name must be at least 3 characters long",
+        });
+      }
+      user.name = name;
+    }
+
+    if (password) {
+      if (password.length < 6) {
+        return res.status(400).json({
+          status: 400,
+          message: "Password must be at least 6 characters long",
+        });
+      }
+      user.password = password;
     }
 
     const updatedUser = await user.save();
@@ -130,11 +155,10 @@ const updateUserProfile = asyncHandler(async (req, res) => {
   } else {
     res.status(404).json({
       status: 404,
-      message: "User not found"
+      message: "User not found",
     });
   }
 });
-
 module.exports = {
   registerUser,
   loginUser,
