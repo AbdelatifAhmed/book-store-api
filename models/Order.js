@@ -22,10 +22,10 @@ const orderSchema = new mongoose.Schema(
         status: {
             type: String,
             required: true,
-            enum: {
-                values: ["pending", "approved", "rejected"],
-                message: "{VALUE} is not a valid order status"
-            },
+            // enum: {
+            //     values: ["pending", "approved", "rejected"],
+            //     message: "{VALUE} is not a valid order status"
+            // },
             default: "pending",
         },
     },
