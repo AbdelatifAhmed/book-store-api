@@ -86,8 +86,59 @@ const getAllUsers = asyncHandler(async (req, res) => {
   }
 });
 
+
+const getUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  if (user) {
+    res.status(200).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      createdAt: user.createdAt,
+    });
+  } else {
+    res.status(404).json({
+      status: 404,
+      message: "User not found"
+    });
+  }
+});
+
+const updateUserProfile = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  if (user) {
+
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
+
+    if (req.body.password) {
+      user.password = req.body.password;
+    }
+
+    const updatedUser = await user.save();
+
+    res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      token: generateToken(updatedUser._id),
+    });
+  } else {
+    res.status(404).json({
+      status: 404,
+      message: "User not found"
+    });
+  }
+});
+
 module.exports = {
   registerUser,
   loginUser,
-  getAllUsers
+  getAllUsers,
+  getUser,
+  updateUserProfile
 };

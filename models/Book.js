@@ -20,10 +20,10 @@ const bookSchema = new mongoose.Schema(
     category: {
       type: String,
       required: [true, "Category is required"],
-      // enum: {
-      //   values: ["Programming", "Fiction", "Science", "History", "Biography", "Other"],
-      //   message: "{VALUE} is not a supported category"
-      // }
+      enum: {
+        values: ["Programming", "Fiction", "Science", "History", "Biography", "Other"],
+        message: "{VALUE} is not a supported category"
+      }
     },
 
     price: {
