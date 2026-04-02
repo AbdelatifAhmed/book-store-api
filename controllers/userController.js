@@ -77,7 +77,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
   const users = await User.find({}).sort({ createdAt: -1 });
 
   if (users) {
-    res.json(users);
+    res.status(200).json(users);
   } else {
     res.status(404).json({
       status: 404,
